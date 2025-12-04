@@ -89,8 +89,8 @@ def data_base_connection():
     try:
         mydb = mysql.connector.connect(
             host="localhost",
-            user="root",
-            password="GreenOranges#3",
+            user="test",
+            password="password",
             database="cs122a"
         )
         return mydb
@@ -150,3 +150,18 @@ def import_data(folder_path):
         print("Success")
     except mysql.connector.Error as err:
          print("Fail")
+
+def main():
+    if len(sys.argv) != 3:
+        print("Usage: python project.py <folder_path>")
+        return
+
+    command = sys.argv[1]
+    folder_path = sys.argv[2]
+    if command == "import":
+        import_data(folder_path)
+    else:
+        print("Unknown command. Use 'import' to import data.")
+
+if __name__ == "__main__":
+    main()

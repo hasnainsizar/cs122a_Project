@@ -150,4 +150,3 @@ def import_data(folder_path):
         print("Success")
     except mysql.connector.Error as err:
          print("Fail")
-         print(err)

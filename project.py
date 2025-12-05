@@ -191,6 +191,27 @@ def add_customized_model(mid, bmid):
     except mysql.connector.Error as err:
         print("Fail")
 
+def delete_base_model(bmid):
+    mydb = data_base_connection()
+    if mydb is None:
+        print("Fail")
+        return
+
+    cursor = mydb.cursor()
+    try:
+        query = "DELETE FROM BaseModel WHERE bmid = %s"
+        cursor.execute(query, (bmid,))
+        
+        mydb.commit()
+        print("Success")
+    
+    except Exception as err:
+        print(f"Delete Error: {err}")
+        print("Fail")
+    finally:
+        cursor.close()
+        mydb.close()
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python project.py <command> [args]")
@@ -215,6 +236,8 @@ def main():
         )
     elif command == "addCustomizedModel":
         add_customized_model(int(sys.argv[2]), int(sys.argv[3]))
+    elif command == "deleteBaseModel":
+        delete_base_model(int(sys.argv[2]))
     else:
         print("Unknown command.")
 

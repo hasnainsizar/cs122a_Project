@@ -1,3 +1,4 @@
+from click import command
 import mysql.connector
 import csv
 import os
@@ -151,17 +152,49 @@ def import_data(folder_path):
     except mysql.connector.Error as err:
          print("Fail")
 
-def main():
-    if len(sys.argv) != 3:
-        print("Usage: python project.py <folder_path>")
+def insert_agent_client(uid, username, email, card_number, card_holder, expire, cvv, zip_code, interests):
+    mydb = data_base_connection()
+    if mydb is None:
+        print("Fail")
         return
+    cursor = mydb.cursor()
+    try:
+        insert_user = "INSERT INTO User (uid, email, username) VALUES (%s, %s, %s)"
+        cursor.execute(insert_user, (uid, email, username))
 
+        insert_agent_client = """INSERT INTO AgentClient (uid, interests, cardholder, expire, cardno, cvv, zip)
+                                 VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+        cursor.execute(insert_agent_client, (uid, interests, card_holder, expire, card_number, cvv, zip_code))
+
+        mydb.commit()
+        print("Success")
+    except mysql.connector.Error as err:
+        print("Fail")
+    
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: python project.py <command> [args]")
+        return
     command = sys.argv[1]
-    folder_path = sys.argv[2]
     if command == "import":
-        import_data(folder_path)
+        import_data(sys.argv[2])
+    elif command == "insertAgentClient":
+        if len(sys.argv) != 11:
+            print("Usage: python project.py insertAgentClient <uid> <username> <email> <card_number> <card_holder> <expire> <cvv> <zip> <interests>")
+            return
+        insert_agent_client(
+            int(sys.argv[2]),
+            sys.argv[3],
+            sys.argv[4],
+            int(sys.argv[5]),
+            sys.argv[6],
+            sys.argv[7],
+            int(sys.argv[8]),
+            int(sys.argv[9]),
+            sys.argv[10]
+        )
     else:
-        print("Unknown command. Use 'import' to import data.")
+        print("Unknown command.")
 
 if __name__ == "__main__":
     main()

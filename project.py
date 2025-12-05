@@ -171,6 +171,26 @@ def insert_agent_client(uid, username, email, card_number, card_holder, expire, 
     except mysql.connector.Error as err:
         print("Fail")
     
+def add_customized_model(mid, bmid):
+    mydb = data_base_connection()
+    if mydb is None:
+        print("Fail")
+        return
+    
+    cursor = mydb.cursor()
+    
+    try:
+        query = """
+            INSERT INTO CustomizedModel (bmid, mid)
+            VALUES (%s, %s)
+        """
+        cursor.execute(query, (bmid, mid))
+        mydb.commit()
+        print("Success")
+
+    except mysql.connector.Error as err:
+        print("Fail")
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python project.py <command> [args]")
@@ -193,6 +213,8 @@ def main():
             int(sys.argv[9]),
             sys.argv[10]
         )
+    elif command == "addCustomizedModel":
+        add_customized_model(int(sys.argv[2]), int(sys.argv[3]))
     else:
         print("Unknown command.")
 

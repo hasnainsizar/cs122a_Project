@@ -149,8 +149,11 @@ def import_data(folder_path):
 
         mydb.commit()
         print("Success")
-    except mysql.connector.Error as err:
+    except mysql.connector.Error:
          print("Fail")
+    finally:
+        cursor.close()
+        mydb.close()
 
 def insert_agent_client(uid, username, email, card_number, card_holder, expire, cvv, zip_code, interests):
     mydb = data_base_connection()
@@ -212,6 +215,65 @@ def delete_base_model(bmid):
         cursor.close()
         mydb.close()
 
+def list_internet_service(bmid):
+    mydb = data_base_connection()
+    if mydb is None:
+        return
+
+    cursor = mydb.cursor()
+    
+    try:
+        query = """SELECT I.sid, I.endpoints, I.provider
+                FROM InternetService I, ModelServices M
+                WHERE I.sid = M.sid AND M.bmid = %s
+                ORDER BY I.provider ASC;"""
+        
+        cursor.execute(query, (bmid,))
+        services = cursor.fetchall()
+
+        for s in services:
+            sid, endpoints, provider = s
+            print(f"{sid},{endpoints},{provider}")
+
+    except mysql.connector.Error:
+        pass
+
+    finally:
+        cursor.close()
+        mydb.close()
+
+def count_customized_model(*args):
+    bmid_list = ",".join(["%s"] * len(args))
+    
+
+    mydb = data_base_connection()
+    if mydb is None:
+        return
+    cursor = mydb.cursor()
+
+    try:
+        query = f"""SELECT B.bmid, B.description, COUNT(*)
+                FROM BaseModel B
+                LEFT JOIN CustomizedModel C ON B.bmid = C.bmid 
+                WHERE B.bmid IN ({bmid_list})
+                GROUP BY B.bmid, B.description 
+                ORDER BY B.bmid ASC;"""
+        
+        cursor.execute(query, args)
+        results = cursor.fetchall() 
+
+        for r in results: 
+            bmid, description, count = r
+            print(f"{bmid},{description},{count}")
+
+    except mysql.connector.Error:
+        pass
+
+    finally:
+        cursor.close()
+        mydb.close()
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python project.py <command> [args]")
@@ -238,6 +300,10 @@ def main():
         add_customized_model(int(sys.argv[2]), int(sys.argv[3]))
     elif command == "deleteBaseModel":
         delete_base_model(int(sys.argv[2]))
+    elif command == "listInternetService": 
+        list_internet_service(int(sys.argv[2]))
+    elif command == "countCustomizedModel": 
+        count_customized_model(*sys.argv[2:])
     else:
         print("Unknown command.")
 

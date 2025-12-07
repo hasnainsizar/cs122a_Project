@@ -273,6 +273,28 @@ def count_customized_model(*args):
         cursor.close()
         mydb.close()
 
+def topNDurationConfig(uid, N):
+    mydb = data_base_connection()
+    if mydb is None:
+        return
+    cursor = mydb.cursor()
+    try:
+        query = """SELECT C.client_uid, C.cid, C.labels, C.content, MC.duration
+                FROM Configuration C
+                JOIN ModelConfigurations MC ON C.cid = MC.cid
+                WHERE C.client_uid = %s
+                ORDER BY MC.duration DESC
+                LIMIT %s;"""
+        cursor.execute(query, (uid, N))
+        results = cursor.fetchall()
+        for r in results:
+            uid, cid, labels, content, duration = r
+            print(f"{uid},{cid},{labels},{content},{duration}")
+    except mysql.connector.Error:
+        pass
+    finally:
+        cursor.close()
+        mydb.close()
 
 def main():
     if len(sys.argv) < 2:
@@ -304,6 +326,10 @@ def main():
         list_internet_service(int(sys.argv[2]))
     elif command == "countCustomizedModel": 
         count_customized_model(*sys.argv[2:])
+    elif command == "topNDurationConfig":
+        uid = int(sys.argv[2])
+        N = int(sys.argv[3])
+        topNDurationConfig(uid, N)
     else:
         print("Unknown command.")
 

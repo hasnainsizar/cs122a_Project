@@ -295,7 +295,30 @@ def topNDurationConfig(uid, N):
     finally:
         cursor.close()
         mydb.close()
-
+def listBaseModelKeyWord(keyword):
+    mydb = data_base_connection()
+    if mydb is None:
+        return
+    cursor = mydb.cursor()
+    try:
+        query = """SELECT B.bmid, I.sid, I.provider, L.domain
+                FROM BaseModel B
+                JOIN ModelServices M ON B.bmid = M.bmid
+                JOIN LLMService L ON M.sid = L.sid
+                JOIN InternetService I ON L.sid = I.sid
+                WHERE L.domain LIKE %s
+                ORDER BY B.bmid ASC
+                LIMIT 5;"""
+        cursor.execute(query, (f"%{keyword}%",))
+        results = cursor.fetchall()
+        for r in results:
+            bmid, sid, provider, domain = r
+            print(f"{bmid},{sid},{provider},{domain}")
+    except mysql.connector.Error:
+        pass
+    finally:
+        cursor.close()
+        mydb.close()
 def main():
     if len(sys.argv) < 2:
         print("Usage: python project.py <command> [args]")
@@ -330,6 +353,8 @@ def main():
         uid = int(sys.argv[2])
         N = int(sys.argv[3])
         topNDurationConfig(uid, N)
+    elif command == "listBaseModelKeyWord":
+        listBaseModelKeyWord(sys.argv[2])
     else:
         print("Unknown command.")
 

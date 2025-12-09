@@ -171,7 +171,11 @@ def insert_agent_client(uid, username, email, card_number, card_holder, expire, 
         mydb.commit()
         print("Success")
     except mysql.connector.Error as err:
+        mydb.rollback()
         print("Fail")
+    finally:
+        cursor.close()
+        mydb.close()
     
 def add_customized_model(mid, bmid):
     mydb = data_base_connection()
@@ -204,11 +208,13 @@ def delete_base_model(bmid):
         query = "DELETE FROM BaseModel WHERE bmid = %s"
         cursor.execute(query, (bmid,))
         
-        mydb.commit()
-        print("Success")
+        if cursor.rowcount > 0:
+            mydb.commit()
+            print("Success")
+        else:
+            print("Fail")
     
     except Exception as err:
-        print(f"Delete Error: {err}")
         print("Fail")
     finally:
         cursor.close()
@@ -282,7 +288,7 @@ def topNDurationConfig(uid, N):
                 FROM Configuration C
                 JOIN ModelConfigurations MC ON C.cid = MC.cid
                 WHERE C.client_uid = %s
-                ORDER BY MC.duration DESC
+                ORDER BY MC.duration DESC, MC.cid ASC, MC.bmid ASC, MC.mid ASC
                 LIMIT %s;"""
         cursor.execute(query, (uid, N))
         results = cursor.fetchall()

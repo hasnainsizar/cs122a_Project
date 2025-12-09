@@ -1,4 +1,3 @@
-from click import command
 import mysql.connector
 import csv
 import os

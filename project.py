@@ -170,8 +170,7 @@ def insert_agent_client(uid, username, email, card_number, card_holder, expire, 
 
         mydb.commit()
         print("Success")
-    except mysql.connector.Error as err:
-        mydb.rollback()
+    except mysql.connector.Error:
         print("Fail")
     finally:
         cursor.close()
@@ -284,11 +283,12 @@ def topNDurationConfig(uid, N):
         return
     cursor = mydb.cursor()
     try:
-        query = """SELECT C.client_uid, C.cid, C.labels, C.content, MC.duration
+        query = """SELECT C.client_uid, C.cid, C.labels, C.content, MAX(MC.duration) as max_duration
                 FROM Configuration C
                 JOIN ModelConfigurations MC ON C.cid = MC.cid
                 WHERE C.client_uid = %s
-                ORDER BY MC.duration DESC, MC.cid ASC, MC.bmid ASC, MC.mid ASC
+                GROUP BY C.client_uid, C.cid, C.labels, C.content
+                ORDER BY max_duration DESC, C.cid ASC
                 LIMIT %s;"""
         cursor.execute(query, (uid, N))
         results = cursor.fetchall()
@@ -300,6 +300,7 @@ def topNDurationConfig(uid, N):
     finally:
         cursor.close()
         mydb.close()
+
 def listBaseModelKeyWord(keyword):
     mydb = data_base_connection()
     if mydb is None:

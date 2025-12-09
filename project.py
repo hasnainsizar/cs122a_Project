@@ -161,8 +161,13 @@ def insert_agent_client(uid, username, email, card_number, card_holder, expire, 
         return
     cursor = mydb.cursor()
     try:
-        insert_user = "INSERT INTO User (uid, email, username) VALUES (%s, %s, %s)"
-        cursor.execute(insert_user, (uid, email, username))
+        check_user = "SELECT uid FROM User WHERE uid = %s"
+        cursor.execute(check_user, (uid,))
+        user_result = cursor.fetchone()
+
+        if user_result is None:
+            insert_user = "INSERT INTO User (uid, email, username) VALUES (%s, %s, %s)"
+            cursor.execute(insert_user, (uid, email, username))
 
         insert_agent_client = """INSERT INTO AgentClient (uid, interests, cardholder, expire, cardno, cvv, zip)
                                  VALUES (%s, %s, %s, %s, %s, %s, %s)"""

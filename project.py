@@ -319,6 +319,43 @@ def listBaseModelKeyWord(keyword):
     finally:
         cursor.close()
         mydb.close()
+
+def printNL2SQLresult():
+    try:
+        csv_path = "nl2sql_results.csv"
+        
+        with open(csv_path, 'r', encoding='utf-8') as csvfile:
+            csv_reader = csv.reader(csvfile)
+            header = next(csv_reader)
+
+            print("=" * 200)
+            print("NL2SQL RESULTS")
+            print("=" * 200)
+            print()
+
+            for idx, row in enumerate(csv_reader, 1):
+                print(f"Result #{idx}:")
+                print(f"  NLquery_id:             {row[0]}")
+                print(f"  NLquery:                {row[1]}")
+                print(f"  LLM_model_name:         {row[2]}")
+                print(f"  prompt:                 {row[3][:150]}..." if len(row[3]) > 150 else f"  prompt:                 {row[3]}")
+                print(f"  LLM_returned_SQL_id:    {row[4]}")
+                print(f"  LLM_returned_SQL_query: {row[5][:150]}..." if len(row[5]) > 150 else f"  LLM_returned_SQL_query: {row[5]}")
+                print(f"  SQL_correct:            {row[6]}")
+                if len(row) > 7:
+                    print(f"  Error Analysis:")
+                    print(f"    - wrong_table_name:   {row[7]}")
+                    print(f"    - syntax_error:       {row[8]}")
+                    print(f"    - wrong_logic:        {row[9]}")
+                print()
+            
+            print("=" * 200)
+                
+    except FileNotFoundError:
+        print("Error: nl2sql_results.csv file not found")
+    except Exception as e:
+        print("Fail")
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python project.py <command> [args]")
@@ -355,6 +392,8 @@ def main():
         topNDurationConfig(uid, N)
     elif command == "listBaseModelKeyWord":
         listBaseModelKeyWord(sys.argv[2])
+    elif command == "printNL2SQLresult":
+        printNL2SQLresult()
     else:
         print("Unknown command.")
 
